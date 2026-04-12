@@ -18,9 +18,9 @@ public class AdoptionRequestController {
     }
 
     @PostMapping("new")
-    public AdoptionRequest createAdoptionRequest(@PathVariable Long petId) {
+    public AdoptionRequest createAdoptionRequest(@PathVariable Long petId, Long userId) {
         System.out.println("calling createAdoptionRequest ==>");
-        return adoptionRequestService.createAdoptionRequest(petId);
+        return adoptionRequestService.createAdoptionRequest(petId, userId);
     }
 
     @GetMapping("all")
