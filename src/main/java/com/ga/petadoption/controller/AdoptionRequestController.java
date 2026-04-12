@@ -41,4 +41,10 @@ public class AdoptionRequestController {
         adoptionRequestService.deleteAdoptionRequest(adoptionRequestId);
         return "Adoption Request deleted successfully";
     }
+
+    @PostMapping("/simulate/{petId}")
+    public String simulate(@PathVariable Long petId) {
+        adoptionRequestService.simulateConcurrentAdoptions(petId);
+        return "Simulation started!";
+    }
 }

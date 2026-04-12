@@ -9,6 +9,7 @@ import com.ga.petadoption.model.enums.AdoptionRequestStatus;
 import com.ga.petadoption.model.enums.PetStatus;
 import com.ga.petadoption.repository.AdoptionRequestRepository;
 import com.ga.petadoption.repository.PetRepository;
+import com.ga.petadoption.repository.UserRepository;
 import com.ga.petadoption.security.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,14 +26,16 @@ public class AdoptionRequestService {
 
     private final AdoptionRequestRepository adoptionRequestRepository;
     private final PetRepository petRepository;
+    private final UserRepository userRepository;
 
     // lock map per pet
     private final ConcurrentHashMap<Long, ReentrantLock> locks = new ConcurrentHashMap<>();
 
     @Autowired
-    public AdoptionRequestService(AdoptionRequestRepository adoptionRequestRepository, PetRepository petRepository) {
+    public AdoptionRequestService(AdoptionRequestRepository adoptionRequestRepository, PetRepository petRepository, UserRepository userRepository) {
         this.adoptionRequestRepository = adoptionRequestRepository;
         this.petRepository = petRepository;
+        this.userRepository = userRepository;
     }
 
     private ReentrantLock getLock(Long petId) {
@@ -64,8 +67,12 @@ public class AdoptionRequestService {
             // create request
             AdoptionRequest request = new AdoptionRequest();
             request.setPet(pet);
-            request.setUser(getCurrentLoggedInUser());
             request.setStatus(AdoptionRequestStatus.PENDING);
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new InformationNotFoundException("User not found"));
+
+            request.setUser(user);
 
             return adoptionRequestRepository.save(request);
 
