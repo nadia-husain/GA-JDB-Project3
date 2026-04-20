@@ -25,7 +25,7 @@ public class VolunteerService {
     }
 
     public Volunteer createVolunteer(Volunteer volunteer) {
-        if (volunteerRepository.existsByUserIdAndEventId(
+        if (volunteerRepository.existsByUserIdAndVolunteerEventId(
                 volunteer.getUser().getId(), volunteer.getVolunteerEvent().getId())) {
             throw new IllegalStateException("User has already volunteered for this event.");
         }
