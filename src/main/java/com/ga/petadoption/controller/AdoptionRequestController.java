@@ -1,6 +1,7 @@
 package com.ga.petadoption.controller;
 
 import com.ga.petadoption.model.AdoptionRequest;
+import com.ga.petadoption.model.Pet;
 import com.ga.petadoption.service.AdoptionRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,12 @@ public class AdoptionRequestController {
         return adoptionRequestService.getAdoptionRequestById(adoptionRequestId);
     }
 
+    @PatchMapping(path = "{adoptionRequestId}")
+    public AdoptionRequest updateAdoptionRequest(@PathVariable Long adoptionRequestId, @RequestBody AdoptionRequest adoptionRequestObject) {
+        System.out.println("calling updateAdoptionRequest ==>");
+        return adoptionRequestService.updateAdoptionRequest(adoptionRequestId, adoptionRequestObject);
+    }
+
     @DeleteMapping("{adoptionRequestId}")
     public String deleteAdoptionRequest(@PathVariable(value = "adoptionRequestId") Long adoptionRequestId) {
         System.out.println("calling deleteAdoptionRequest ==>");
@@ -42,9 +49,5 @@ public class AdoptionRequestController {
         return "Adoption Request deleted successfully";
     }
 
-    @PostMapping("/simulate/{petId}")
-    public String simulate(@PathVariable Long petId) {
-        adoptionRequestService.simulateConcurrentAdoptions(petId);
-        return "Simulation started!";
-    }
+
 }

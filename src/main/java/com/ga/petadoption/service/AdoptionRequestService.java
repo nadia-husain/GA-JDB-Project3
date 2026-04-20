@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
@@ -137,28 +135,5 @@ public class AdoptionRequestService {
         } else {
             adoptionRequestRepository.deleteById(adoptionRequestId);
         }
-    }
-
-    public void simulateConcurrentAdoptions(Long petId) {
-
-        ExecutorService executor = Executors.newFixedThreadPool(5);
-
-        for (int i = 1; i <= 10; i++) {
-            Long userId = (long) i;
-
-            executor.submit(() -> {
-                try {
-                    System.out.println("User " + userId + " trying...");
-
-                    createAdoptionRequest(petId, userId);
-
-                    System.out.println("User " + userId + " SUCCESS");
-                } catch (Exception e) {
-                    System.out.println("User " + userId + " FAILED: " + e.getMessage());
-                }
-            });
-        }
-
-        executor.shutdown();
     }
 }
