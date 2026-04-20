@@ -7,5 +7,4 @@ import java.util.Optional;
 
 public interface VolunteerEventRepository extends JpaRepository<VolunteerEvent, Long> {
     Optional<VolunteerEvent> findById(Long volunteerEventId);
-    VolunteerEvent findByIdAndUserId(Long volunteerEventId, Long userId);
 }

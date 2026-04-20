@@ -1,6 +1,5 @@
 package com.ga.petadoption.controller;
 
-
 import com.ga.petadoption.model.VolunteerEvent;
 import com.ga.petadoption.service.VolunteerEventService;
 import org.springframework.beans.factory.annotation.Autowired;
