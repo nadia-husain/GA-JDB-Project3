@@ -19,7 +19,7 @@ public class VolunteerController {
 
     @PostMapping("new")
     public Volunteer createVolunteer(@RequestBody Volunteer volunteer) {
-        System.out.println("calling createVolunteerEvent ==> ");
+        System.out.println("calling createVolunteer ==> ");
         return volunteerService.createVolunteer(volunteer);
     }
 
