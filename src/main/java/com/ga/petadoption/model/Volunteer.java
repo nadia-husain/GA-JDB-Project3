@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @Entity
-@Table(name = "volunteers")
+@Table(name = "volunteer")
 public class Volunteer {
     @Id
     @Column
@@ -29,11 +29,12 @@ public class Volunteer {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "pet_id")
+    @JoinColumn(name = "volunteer_event_id")
     @JsonIgnore
-    private Pet pet;
+    private VolunteerEvent volunteerEvent;
 
-    // add volunteering column
+    @Column
+    private Boolean hasAttended;
 
     @CreationTimestamp
     @Column
