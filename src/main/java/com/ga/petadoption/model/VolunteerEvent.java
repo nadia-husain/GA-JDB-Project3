@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @Entity
-@Table(name = "volunteering")
-public class Volunteering {
+@Table(name = "volunteer_event")
+public class VolunteerEvent {
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
