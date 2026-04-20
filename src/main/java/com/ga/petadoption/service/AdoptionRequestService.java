@@ -22,7 +22,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class AdoptionRequestService {
-
     private final AdoptionRequestRepository adoptionRequestRepository;
     private final PetRepository petRepository;
     private final UserRepository userRepository;
@@ -51,25 +50,22 @@ public class AdoptionRequestService {
 
         try {
             Pet pet = petRepository.findById(petId)
-                    .orElseThrow(() -> new InformationNotFoundException("Pet not found"));
+                    .orElseThrow(() -> new InformationNotFoundException("Pet with id " + petId + " not found"));
 
             if (pet.getPetStatus() != PetStatus.AVAILABLE) {
-                throw new InformationExistException("Pet already adopted!");
+                throw new InformationExistException("Pet with id " + petId + " is not available for adoption.");
             }
 
-            // mark pet unavailable
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new InformationNotFoundException("User with id " + userId + " not found"));
+
             pet.setPetStatus(PetStatus.UNAVAILABLE);
             petRepository.save(pet);
 
-            // create request
             AdoptionRequest request = new AdoptionRequest();
             request.setPet(pet);
-            request.setStatus(AdoptionRequestStatus.PENDING);
-
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new InformationNotFoundException("User not found"));
-
             request.setUser(user);
+            request.setStatus(AdoptionRequestStatus.PENDING);
 
             return adoptionRequestRepository.save(request);
 
@@ -79,16 +75,14 @@ public class AdoptionRequestService {
     }
 
     public List<AdoptionRequest> getAllAdoptionRequests() {
-        User currentUser = getCurrentLoggedInUser();
-
-        if (currentUser.getRole().equals(Role.ADMIN)) {
+        if (getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
             List<AdoptionRequest> adoptionRequests = adoptionRequestRepository.findAll();
             if (adoptionRequests.isEmpty()) {
                 throw new InformationNotFoundException("No requests were found.");
             }
             return adoptionRequests;
         } else {
-            List<AdoptionRequest> adoptionRequests = adoptionRequestRepository.findByUserId(currentUser.getId());
+            List<AdoptionRequest> adoptionRequests = adoptionRequestRepository.findByUserId(getCurrentLoggedInUser().getId());
             if (adoptionRequests.isEmpty()) {
                 throw new InformationNotFoundException("No requests were found for your account.");
             }
@@ -101,11 +95,11 @@ public class AdoptionRequestService {
                 .orElseThrow(() -> new InformationNotFoundException("Adoption Request with id " + adoptionRequestId + " not found"));
     }
 
-    public AdoptionRequest updateAdoptionRequest(Long adoptionRequestId, AdoptionRequest adoptionRequestObject) {
+    public AdoptionRequest updateAdoptionRequestStatus(Long adoptionRequestId, AdoptionRequestStatus status) {
         AdoptionRequest adoptionRequest = adoptionRequestRepository.findById(adoptionRequestId)
                 .orElseThrow(() -> new InformationNotFoundException("Adoption Request with id " + adoptionRequestId + " not found"));
 
-        adoptionRequest.setStatus(adoptionRequestObject.getStatus());
+        adoptionRequest.setStatus(status);
         return adoptionRequestRepository.save(adoptionRequest);
     }
 

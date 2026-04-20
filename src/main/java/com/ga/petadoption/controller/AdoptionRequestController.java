@@ -1,9 +1,12 @@
 package com.ga.petadoption.controller;
 
 import com.ga.petadoption.model.AdoptionRequest;
-import com.ga.petadoption.model.Pet;
+import com.ga.petadoption.model.enums.AdoptionRequestStatus;
+import com.ga.petadoption.model.response.AdoptionRequestResponse;
+import com.ga.petadoption.security.MyUserDetails;
 import com.ga.petadoption.service.AdoptionRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,10 +21,13 @@ public class AdoptionRequestController {
         this.adoptionRequestService = adoptionRequestService;
     }
 
-    @PostMapping("new")
-    public AdoptionRequest createAdoptionRequest(@PathVariable Long petId, Long userId) {
-        System.out.println("calling createAdoptionRequest ==>");
-        return adoptionRequestService.createAdoptionRequest(petId, userId);
+    @PostMapping("/{petId}/new")
+    public AdoptionRequestResponse createAdoptionRequest(
+            @PathVariable Long petId,
+            @AuthenticationPrincipal MyUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        AdoptionRequest ar = adoptionRequestService.createAdoptionRequest(petId, userId);
+        return new AdoptionRequestResponse(ar);
     }
 
     @GetMapping("all")
@@ -36,18 +42,19 @@ public class AdoptionRequestController {
         return adoptionRequestService.getAdoptionRequestById(adoptionRequestId);
     }
 
-    @PatchMapping(path = "{adoptionRequestId}")
-    public AdoptionRequest updateAdoptionRequest(@PathVariable Long adoptionRequestId, @RequestBody AdoptionRequest adoptionRequestObject) {
+    @PatchMapping(path = "{adoptionRequestId}/status")
+    public AdoptionRequestResponse updateAdoptionRequestStatus(
+            @PathVariable Long adoptionRequestId,
+            @RequestParam AdoptionRequestStatus status) {
         System.out.println("calling updateAdoptionRequest ==>");
-        return adoptionRequestService.updateAdoptionRequest(adoptionRequestId, adoptionRequestObject);
+        AdoptionRequest ar = adoptionRequestService.updateAdoptionRequestStatus(adoptionRequestId, status);
+        return new AdoptionRequestResponse(ar);
     }
 
     @DeleteMapping("{adoptionRequestId}")
     public String deleteAdoptionRequest(@PathVariable(value = "adoptionRequestId") Long adoptionRequestId) {
         System.out.println("calling deleteAdoptionRequest ==>");
         adoptionRequestService.deleteAdoptionRequest(adoptionRequestId);
-        return "Adoption Request deleted successfully";
+        return "Adoption Request ID:" + adoptionRequestId + " deleted successfully.";
     }
-
-
 }

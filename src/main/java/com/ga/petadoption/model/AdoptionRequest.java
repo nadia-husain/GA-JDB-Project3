@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @Entity
-@Table(name = "adoptionRequests")
+@Table(name = "adoption_request")
 public class AdoptionRequest {
     @Id
     @Column
