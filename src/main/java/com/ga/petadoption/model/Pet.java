@@ -1,6 +1,5 @@
 package com.ga.petadoption.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ga.petadoption.model.enums.PetStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,7 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @Entity
-@Table(name = "pets")
+@Table(name = "pet")
 public class Pet {
     @Id
     @Column
@@ -31,13 +30,10 @@ public class Pet {
     private String type;
 
     @Column
-    private String breed;
-
-    @Column
     private Integer age;
 
-    @Column
-    private Boolean isVaccinated;
+    @Column(columnDefinition = "TEXT")
+    private String photo;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -50,9 +46,4 @@ public class Pet {
     @UpdateTimestamp
     @Column
     private LocalDateTime updatedAt;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    @JsonIgnore
-    private User user;
 }

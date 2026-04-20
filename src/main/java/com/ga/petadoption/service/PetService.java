@@ -4,81 +4,86 @@ import com.ga.petadoption.exception.InformationExistException;
 import com.ga.petadoption.exception.InformationNotFoundException;
 import com.ga.petadoption.model.Pet;
 import com.ga.petadoption.model.User;
+import com.ga.petadoption.model.enums.PetStatus;
+import com.ga.petadoption.repository.AdoptionRequestRepository;
 import com.ga.petadoption.repository.PetRepository;
 import com.ga.petadoption.security.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
 @Service
 public class PetService {
     private final PetRepository petRepository;
+    private final AdoptionRequestRepository adoptionRequestRepository;
 
     @Autowired
-    public PetService(PetRepository petRepository) {
+    public PetService(PetRepository petRepository, AdoptionRequestRepository adoptionRequestRepository) {
         this.petRepository = petRepository;
+        this.adoptionRequestRepository = adoptionRequestRepository;
     }
 
     public static User getCurrentLoggedInUser() {
-        MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
-        return userDetails.getUser();
+        return ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
     }
 
-    public Pet createPet(Pet petObject) {
-        Pet pet = petRepository.findByName(petObject.getName());
-
-        if (pet != null) {
-            throw new InformationExistException("pet with name " + pet.getName() + " already exists! Choose another name");
-        } else {
-            petObject.setUser(getCurrentLoggedInUser());
-            return petRepository.save(petObject);
+    public Pet createPet(Pet petObject, MultipartFile photo) throws IOException {
+        if (petRepository.existsByName(petObject.getName())) {
+            throw new InformationExistException("Pet with name '" + petObject.getName() + "' already exists");
         }
+
+        petObject.setPetStatus(PetStatus.AVAILABLE);
+
+        if (photo != null && !photo.isEmpty()) {
+            String base64Photo = Base64.getEncoder().encodeToString(photo.getBytes());
+            petObject.setPhoto(base64Photo);
+        }
+
+        return petRepository.save(petObject);
     }
 
     public Pet getPetById(Long petId) {
-        Pet pet = petRepository.findByIdAndUserId(petId, PetService.getCurrentLoggedInUser().getId());
-        if (pet == null) {
-            throw new InformationNotFoundException("category with id " + petId + " not found");
-        } else {
-            return pet;
-        }
-    }
-
-    public Pet updatePet(Long petId, Pet petObject) {
-        Pet pet = petRepository.findByIdAndUserId(petId, PetService.getCurrentLoggedInUser().getId());
-        if (pet == null) {
-            throw new InformationNotFoundException("pet with id " + petId + " not found");
-        } else {
-            pet.setName(petObject.getName());
-            pet.setType(petObject.getType());
-            pet.setBreed(petObject.getBreed());
-            pet.setAge(petObject.getAge());
-            pet.setIsVaccinated(petObject.getIsVaccinated());
-            pet.setPetStatus(petObject.getPetStatus());
-            pet.setUser(PetService.getCurrentLoggedInUser());
-            return petRepository.save(petObject);
-        }
-    }
-
-    public void deletePet(Long petId) {
-        Pet pet = petRepository.findByIdAndUserId(petId, PetService.getCurrentLoggedInUser().getId());
-        if (pet == null) {
-            throw new InformationNotFoundException("pet with id " + petId + " not found");
-        } else {
-            petRepository.deleteById(petId);
-        }
+        return petRepository.findById(petId)
+                .orElseThrow(() -> new InformationNotFoundException("Pet with id " + petId + " not found"));
     }
 
     public List<Pet> getAllPets() {
         List<Pet> pets = petRepository.findAll();
+        if (pets.isEmpty()) throw new InformationNotFoundException("No pets found");
 
-        if (pets.isEmpty()) {
-            throw new InformationNotFoundException("no pets were found.");
-        } else {
-            return pets;
+        return pets;
+    }
+
+    public Pet updatePet(Long petId, Pet petObject, MultipartFile photo) throws IOException {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new InformationNotFoundException("Pet with id " + petId + " not found"));
+
+        pet.setName(petObject.getName());
+        pet.setType(petObject.getType());
+        pet.setAge(petObject.getAge());
+        pet.setPetStatus(petObject.getPetStatus());
+
+        if (photo != null && !photo.isEmpty()) {
+            String base64Photo = Base64.getEncoder().encodeToString(photo.getBytes());
+            pet.setPhoto(base64Photo);
         }
+
+        return petRepository.save(pet);
+    }
+
+    public void deletePet(Long petId) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new InformationNotFoundException("Pet with id " + petId + " not found"));
+
+        if (adoptionRequestRepository.existsByPetId(petId)) {
+            throw new InformationExistException("Pet with ID:" + petId + " cannot be deleted because it has an adoption request.");
+        }
+
+        petRepository.delete(pet);
     }
 }
