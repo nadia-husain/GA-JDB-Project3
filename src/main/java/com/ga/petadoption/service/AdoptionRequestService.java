@@ -7,6 +7,7 @@ import com.ga.petadoption.model.Pet;
 import com.ga.petadoption.model.User;
 import com.ga.petadoption.model.enums.AdoptionRequestStatus;
 import com.ga.petadoption.model.enums.PetStatus;
+import com.ga.petadoption.model.enums.Role;
 import com.ga.petadoption.repository.AdoptionRequestRepository;
 import com.ga.petadoption.repository.PetRepository;
 import com.ga.petadoption.repository.UserRepository;
@@ -41,9 +42,7 @@ public class AdoptionRequestService {
     }
 
     public static User getCurrentLoggedInUser() {
-        MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-        return userDetails.getUser();
+        return ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
     }
 
     public AdoptionRequest createAdoptionRequest(Long petId, Long userId) {
@@ -80,60 +79,40 @@ public class AdoptionRequestService {
     }
 
     public List<AdoptionRequest> getAllAdoptionRequests() {
-        List<AdoptionRequest> adoptionRequest = adoptionRequestRepository.findAll();
+        User currentUser = getCurrentLoggedInUser();
 
-        if (adoptionRequest.isEmpty()) {
-            throw new InformationNotFoundException("no requests were found.");
+        if (currentUser.getRole().equals(Role.ADMIN)) {
+            List<AdoptionRequest> adoptionRequests = adoptionRequestRepository.findAll();
+            if (adoptionRequests.isEmpty()) {
+                throw new InformationNotFoundException("No requests were found.");
+            }
+            return adoptionRequests;
         } else {
-            return adoptionRequest;
+            List<AdoptionRequest> adoptionRequests = adoptionRequestRepository.findByUserId(currentUser.getId());
+            if (adoptionRequests.isEmpty()) {
+                throw new InformationNotFoundException("No requests were found for your account.");
+            }
+            return adoptionRequests;
         }
     }
 
     public AdoptionRequest getAdoptionRequestById(Long adoptionRequestId) {
-        AdoptionRequest adoptionRequest = adoptionRequestRepository.findByIdAndUserId(
-                adoptionRequestId,
-                getCurrentLoggedInUser().getId()
-        );
-
-        if (adoptionRequest == null) {
-            throw new InformationNotFoundException(
-                    "Adoption Request with id " + adoptionRequestId + " not found"
-            );
-        } else {
-            return adoptionRequest;
-        }
+        return adoptionRequestRepository.findByIdAndUserId(adoptionRequestId, getCurrentLoggedInUser().getId())
+                .orElseThrow(() -> new InformationNotFoundException("Adoption Request with id " + adoptionRequestId + " not found"));
     }
 
-    public AdoptionRequest updateAdoptionRequest(Long adoptionRequestId,
-                                                 AdoptionRequest adoptionRequestObject) {
+    public AdoptionRequest updateAdoptionRequest(Long adoptionRequestId, AdoptionRequest adoptionRequestObject) {
+        AdoptionRequest adoptionRequest = adoptionRequestRepository.findById(adoptionRequestId)
+                .orElseThrow(() -> new InformationNotFoundException("Adoption Request with id " + adoptionRequestId + " not found"));
 
-        AdoptionRequest adoptionRequest = adoptionRequestRepository.findByIdAndUserId(
-                adoptionRequestId,
-                getCurrentLoggedInUser().getId()
-        );
-
-        if (adoptionRequest == null) {
-            throw new InformationNotFoundException(
-                    "Adoption Request with ID " + adoptionRequestId + " is not found."
-            );
-        } else {
-            adoptionRequest.setStatus(adoptionRequestObject.getStatus());
-            return adoptionRequestRepository.save(adoptionRequest);
-        }
+        adoptionRequest.setStatus(adoptionRequestObject.getStatus());
+        return adoptionRequestRepository.save(adoptionRequest);
     }
 
     public void deleteAdoptionRequest(Long adoptionRequestId) {
-        AdoptionRequest adoptionRequest = adoptionRequestRepository.findByIdAndUserId(
-                adoptionRequestId,
-                getCurrentLoggedInUser().getId()
-        );
-
-        if (adoptionRequest == null) {
-            throw new InformationNotFoundException(
-                    "adoption request with id " + adoptionRequestId + " not found"
-            );
-        } else {
-            adoptionRequestRepository.deleteById(adoptionRequestId);
+        if (!adoptionRequestRepository.existsById(adoptionRequestId)) {
+            throw new InformationNotFoundException("Adoption Request with id " + adoptionRequestId + " not found");
         }
+        adoptionRequestRepository.deleteById(adoptionRequestId);
     }
 }
