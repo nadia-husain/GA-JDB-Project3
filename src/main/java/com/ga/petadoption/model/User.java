@@ -7,8 +7,6 @@ import com.ga.petadoption.model.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 @Entity
 @Table(name = "users")
 @Getter
@@ -39,14 +37,6 @@ public class User {
     @Column
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
-
-//    @JsonIgnore
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer", orphanRemoval = true)
-//    private List<AdoptionRequests> adoptionRequests;
-//
-//    @JsonIgnore
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", orphanRemoval = true)
-//    private List<Pet> pet;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "profile_id", referencedColumnName = "id")

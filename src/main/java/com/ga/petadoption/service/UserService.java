@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -162,14 +163,12 @@ public class UserService {
         }
     }
 
-    public UserProfile updateProfile(UserProfile userProfile, MultipartFile cprImage) {
+    public UserProfile updateProfile(UserProfile userProfile, MultipartFile profilePic) throws IOException {
         User user = userRepository.findUserByEmailAddress(UserService.getCurrentLoggedInUser().getEmailAddress());
 
-        if (user.getUserStatus().equals(UserStatus.INACTIVE)) throw new AccessDeniedException("This account has been deactivated. Please contact an admin for support.");
-
-        if (getCurrentLoggedInUser().getRole().equals(Role.CUSTOMER)
-                && !user.getId().equals(getCurrentLoggedInUser().getId()))
-            throw new AccessDeniedException("You are not authorized to change another user's profile data. Please contact a salesman or admin.");
+        if (user.getUserStatus().equals(UserStatus.INACTIVE)) {
+            throw new AccessDeniedException("This account has been deactivated. Please contact an admin for support.");
+        }
 
         UserProfile profile = user.getUserProfile();
 
@@ -177,10 +176,13 @@ public class UserService {
         profile.setLastName(userProfile.getLastName());
         profile.setPhoneNumber(userProfile.getPhoneNumber());
 
-        // handle CPR image upload
-        if (profile.getProfilePic() != null) uploads.deleteImage(uploadImagePath, profile.getProfilePic()); // Delete existing CPR image from storage
-        String newCPRImage = uploads.uploadImage(uploadImagePath, cprImage);
-        profile.setProfilePic(newCPRImage);
+        if (profilePic != null && !profilePic.isEmpty()) {
+            if (profile.getProfilePic() != null) {
+                uploads.deleteImage(uploadImagePath, profile.getProfilePic());
+            }
+            String newProfilePic = uploads.uploadImage(uploadImagePath, profilePic);
+            profile.setProfilePic(newProfilePic);
+        }
 
         userRepository.save(user);
         return profile;
@@ -341,7 +343,7 @@ public class UserService {
     }
 
     /**
-     * Download stored user's CPR image
+     * Download stored user's Profile Pic
      * @param userId Long
      * @return ResponseEntity Resource The stored image if any [PNG, JPEG]
      */

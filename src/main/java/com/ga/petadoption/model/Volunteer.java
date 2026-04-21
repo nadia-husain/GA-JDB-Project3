@@ -25,12 +25,10 @@ public class Volunteer {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnore
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "volunteer_event_id")
-    @JsonIgnore
     private VolunteerEvent volunteerEvent;
 
     @Column

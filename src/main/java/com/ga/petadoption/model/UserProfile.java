@@ -32,5 +32,4 @@ public class UserProfile {
     @JsonIgnore
     @OneToOne(mappedBy = "userProfile")
     private User user;
-
 }
