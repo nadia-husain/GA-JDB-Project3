@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 /**
  * User API
  */
@@ -63,12 +65,14 @@ public class UserController {
     /**
      * Update user's profile
      * @param userProfile UserProfile
-     * @param cprImage MultipartFile [PNG, JPEG]
+     * @param profilePic MultipartFile [PNG, JPEG]
      * @return UserProfile
      */
-    @PutMapping(path = "/update-profile",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public UserProfile updateProfile(@RequestPart UserProfile userProfile, @RequestParam("cprImage") MultipartFile cprImage) {
-        return userService.updateProfile(userProfile, cprImage);
+    @PutMapping(path = "/update-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UserProfile updateProfile(
+            @RequestPart("userProfile") UserProfile userProfile,
+            @RequestPart(value = "profilePic", required = false) MultipartFile profilePic) throws IOException {
+        return userService.updateProfile(userProfile, profilePic);
     }
 
     /**

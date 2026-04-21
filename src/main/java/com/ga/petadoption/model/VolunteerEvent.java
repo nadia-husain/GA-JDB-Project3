@@ -27,7 +27,7 @@ public class VolunteerEvent {
     private String task;
 
     @Column
-    private String place;
+    private String location;
 
     @Column
     private LocalDateTime date;

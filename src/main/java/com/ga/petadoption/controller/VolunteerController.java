@@ -1,8 +1,10 @@
 package com.ga.petadoption.controller;
 
 import com.ga.petadoption.model.Volunteer;
+import com.ga.petadoption.security.MyUserDetails;
 import com.ga.petadoption.service.VolunteerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +20,8 @@ public class VolunteerController {
     }
 
     @PostMapping("new")
-    public Volunteer createVolunteer(@RequestBody Volunteer volunteer) {
+    public Volunteer createVolunteer(
+            @RequestBody Volunteer volunteer) {
         System.out.println("calling createVolunteer ==> ");
         return volunteerService.createVolunteer(volunteer);
     }
