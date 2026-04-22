@@ -1,5 +1,6 @@
 package com.ga.petadoption.service;
 
+import com.ga.petadoption.exception.AccessDeniedException;
 import com.ga.petadoption.exception.InformationExistException;
 import com.ga.petadoption.exception.InformationNotFoundException;
 import com.ga.petadoption.model.User;
@@ -16,8 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class VolunteerService {
@@ -25,17 +24,11 @@ public class VolunteerService {
     private final UserRepository userRepository;
     private final VolunteerEventRepository volunteerEventRepository;
 
-    private final ConcurrentHashMap<Long, ReentrantLock> locks = new ConcurrentHashMap<>();
-
     @Autowired
     public VolunteerService(VolunteerRepository volunteerRepository, UserRepository userRepository, VolunteerEventRepository volunteerEventRepository) {
         this.volunteerRepository = volunteerRepository;
         this.userRepository = userRepository;
         this.volunteerEventRepository = volunteerEventRepository;
-    }
-
-    private ReentrantLock getLock(Long eventId) {
-        return locks.computeIfAbsent(eventId, id -> new ReentrantLock());
     }
 
     public static User getCurrentLoggedInUser() {
@@ -45,56 +38,46 @@ public class VolunteerService {
     @Transactional
     public Volunteer createVolunteer(Volunteer volunteer) {
         if (volunteer.getVolunteerEvent() == null || volunteer.getVolunteerEvent().getId() == null) {
-            throw new InformationNotFoundException("You must provide a valid volunteerEventId in the request body!");
+            throw new InformationNotFoundException("You must provide a valid volunteerEventId!");
         }
 
-        ReentrantLock lock = getLock(volunteer.getVolunteerEvent().getId());
-        lock.lock();
+        VolunteerEvent volunteerEvent = volunteerEventRepository
+                .findById(volunteer.getVolunteerEvent().getId())
+                .orElseThrow(() -> new InformationNotFoundException("Event not found"));
 
-        try {
-            if (getCurrentLoggedInUser().getRole() == Role.CUSTOMER) {
-                volunteer.setUser(getCurrentLoggedInUser());
-            } else if (getCurrentLoggedInUser().getRole() == Role.ADMIN) {
-                if (volunteer.getUser() == null || volunteer.getUser().getId() == null) {
-                    throw new InformationNotFoundException("You must provide a valid userId in the request body!");
-                }
-                User targetUser = userRepository.findById(volunteer.getUser().getId())
-                        .orElseThrow(() -> new InformationNotFoundException("User with id " + volunteer.getUser().getId() + " not found"));
-                volunteer.setUser(targetUser);
-            }
-
-            VolunteerEvent volunteerEvent = volunteerEventRepository.findById(volunteer.getVolunteerEvent().getId())
-                    .orElseThrow(() -> new InformationNotFoundException("Volunteer event with id " + volunteer.getVolunteerEvent().getId() + " not found"));
-
-            if (volunteerEvent.getIsFull()) {
-                throw new InformationExistException("Volunteer event with id " + volunteerEvent.getId() + " is full.");
-            }
-
-            volunteer.setVolunteerEvent(volunteerEvent);
-
-            if (volunteerRepository.existsByUserIdAndVolunteerEventId(
-                    volunteer.getUser().getId(), volunteer.getVolunteerEvent().getId())) {
-                throw new InformationExistException("User has already volunteered for this event.");
-            }
-
-            volunteerEvent.setCapacity(volunteerEvent.getCapacity() - 1);
-            if (volunteerEvent.getCapacity() == 0) {
-                volunteerEvent.setIsFull(true);
-            }
-            volunteerEventRepository.save(volunteerEvent);
-
-            return volunteerRepository.save(volunteer);
-        } finally {
-            lock.unlock();
+        if (volunteerEvent.getIsFull()) {
+            throw new InformationExistException("Event is full.");
         }
+
+        if (volunteerRepository.existsByUserIdAndVolunteerEventId(
+                volunteer.getUser().getId(), volunteerEvent.getId())) {
+            throw new InformationExistException("User already volunteered for this event.");
+        }
+
+        volunteerEvent.setCapacity(volunteerEvent.getCapacity() - 1);
+        if (volunteerEvent.getCapacity() == 0) {
+            volunteerEvent.setIsFull(true);
+        }
+        volunteerEventRepository.save(volunteerEvent);
+
+        return volunteerRepository.save(volunteer);
+        // If two threads modified the same event, JPA throws OptimisticLockException here
     }
 
     public Volunteer getVolunteerById(Long volunteerId) {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can view volunteer.");
+        }
+
         return volunteerRepository.findById(volunteerId)
                 .orElseThrow(() -> new InformationNotFoundException("Volunteer with id " + volunteerId + " not found"));
     }
 
     public List<Volunteer> getAllVolunteers() {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can view volunteers.");
+        }
+
         List<Volunteer> volunteers = volunteerRepository.findAll();
         if (volunteers.isEmpty()) {
             throw new InformationNotFoundException("No volunteers were found.");
@@ -103,6 +86,10 @@ public class VolunteerService {
     }
 
     public Volunteer updateVolunteer(Long volunteerId, Volunteer volunteerObject) {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can update volunteer.");
+        }
+
         Volunteer volunteer = volunteerRepository.findById(volunteerId)
                 .orElseThrow(() -> new InformationNotFoundException("volunteer event with id " + volunteerId + " not found"));
         volunteer.setHasAttended(volunteerObject.getHasAttended());
@@ -110,6 +97,10 @@ public class VolunteerService {
     }
 
     public void deleteVolunteer(Long volunteerId) {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can delete volunteer.");
+        }
+
         volunteerRepository.findById(volunteerId)
                 .orElseThrow(() -> new InformationNotFoundException("volunteer with id " + volunteerId + " not found"));
         volunteerRepository.deleteById(volunteerId);

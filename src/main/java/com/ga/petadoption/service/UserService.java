@@ -80,7 +80,7 @@ public class UserService {
 
             userObject.setVerified(false);
             userObject.setUserStatus(UserStatus.ACTIVE);
-            userObject.setRole(Role.CUSTOMER); // Default user role
+            userObject.setRole(userObject.getRole() != null ? userObject.getRole() : Role.CUSTOMER);
             User savedUser = userRepository.save(userObject);
 
             EmailVerificationToken token = new EmailVerificationToken();
