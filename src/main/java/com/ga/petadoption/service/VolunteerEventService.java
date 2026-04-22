@@ -1,8 +1,10 @@
 package com.ga.petadoption.service;
 
+import com.ga.petadoption.exception.AccessDeniedException;
 import com.ga.petadoption.exception.InformationNotFoundException;
 import com.ga.petadoption.model.User;
 import com.ga.petadoption.model.VolunteerEvent;
+import com.ga.petadoption.model.enums.Role;
 import com.ga.petadoption.repository.VolunteerEventRepository;
 import com.ga.petadoption.security.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,10 @@ public class VolunteerEventService {
     }
 
     public VolunteerEvent createVolunteerEvent(VolunteerEvent volunteerEventObject) {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can create volunteer events.");
+        }
+
         volunteerEventObject.setCreatedBy(getCurrentLoggedInUser());
         return volunteerEventRepository.save(volunteerEventObject);
     }
@@ -42,6 +48,10 @@ public class VolunteerEventService {
     }
 
     public VolunteerEvent updateVolunteerEvent(Long volunteerEventId, VolunteerEvent volunteerEventObject) {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can update volunteer events.");
+        }
+
         VolunteerEvent volunteerEvent = volunteerEventRepository.findById(volunteerEventId)
                 .orElseThrow(() -> new InformationNotFoundException("volunteer event with id " + volunteerEventId + " not found"));
         volunteerEvent.setTask(volunteerEventObject.getTask());
@@ -49,6 +59,10 @@ public class VolunteerEventService {
     }
 
     public void deleteVolunteerEvent(Long volunteerEventId) {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can delete volunteer events.");
+        }
+
         volunteerEventRepository.findById(volunteerEventId)
                 .orElseThrow(() -> new InformationNotFoundException("volunteer event with id " + volunteerEventId + " not found"));
         volunteerEventRepository.deleteById(volunteerEventId);

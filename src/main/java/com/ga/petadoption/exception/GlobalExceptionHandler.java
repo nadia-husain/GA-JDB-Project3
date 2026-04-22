@@ -2,6 +2,7 @@ package com.ga.petadoption.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -71,6 +72,11 @@ public class GlobalExceptionHandler {
                 .body(e.getMessage());
     }
 
+    /**
+     * Handle method argument type mismatch exception (e.g. invalid enum value)
+     * @param ex MethodArgumentTypeMismatchException
+     * @return ResponseEntity String
+     */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<String> handleEnumMismatch(MethodArgumentTypeMismatchException ex) {
         if (ex.getRequiredType() != null && ex.getRequiredType().isEnum()) {
@@ -80,5 +86,16 @@ public class GlobalExceptionHandler {
             );
         }
         return ResponseEntity.badRequest().body("Invalid parameter: " + ex.getMessage());
+    }
+
+    /**
+     * Handle optimistic locking failure when concurrent requests modify the same entity
+     * @param ex ObjectOptimisticLockingFailureException
+     * @return ResponseEntity String
+     */
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<String> handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("Event was just updated by another request. Please try again.");
     }
 }

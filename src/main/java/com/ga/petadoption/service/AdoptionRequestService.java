@@ -1,5 +1,6 @@
 package com.ga.petadoption.service;
 
+import com.ga.petadoption.exception.AccessDeniedException;
 import com.ga.petadoption.exception.InformationExistException;
 import com.ga.petadoption.exception.InformationNotFoundException;
 import com.ga.petadoption.model.AdoptionRequest;
@@ -45,6 +46,12 @@ public class AdoptionRequestService {
     }
 
     public AdoptionRequest createAdoptionRequest(Long petId, Long userId) {
+        if (getCurrentLoggedInUser().getRole() == Role.CUSTOMER) {
+            if (!getCurrentLoggedInUser().getId().equals(userId)) {
+                throw new AccessDeniedException("You cannot create an adoption request for others.");
+            }
+        }
+
         ReentrantLock lock = getLock(petId);
         lock.lock();
 
@@ -91,11 +98,20 @@ public class AdoptionRequestService {
     }
 
     public AdoptionRequest getAdoptionRequestById(Long adoptionRequestId) {
-        return adoptionRequestRepository.findByIdAndUserId(adoptionRequestId, getCurrentLoggedInUser().getId())
-                .orElseThrow(() -> new InformationNotFoundException("Adoption Request with id " + adoptionRequestId + " not found"));
+        if (getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            return adoptionRequestRepository.findById(adoptionRequestId)
+                    .orElseThrow(() -> new InformationNotFoundException("Adoption Request with id " + adoptionRequestId + " not found"));
+        } else {
+            return adoptionRequestRepository.findByIdAndUserId(adoptionRequestId, getCurrentLoggedInUser().getId())
+                    .orElseThrow(() -> new InformationNotFoundException("Adoption Request with id " + adoptionRequestId + " not found"));
+        }
     }
 
     public AdoptionRequest updateAdoptionRequestStatus(Long adoptionRequestId, AdoptionRequestStatus status) {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can update adoption requests.");
+        }
+
         AdoptionRequest adoptionRequest = adoptionRequestRepository.findById(adoptionRequestId)
                 .orElseThrow(() -> new InformationNotFoundException("Adoption Request with id " + adoptionRequestId + " not found"));
 
@@ -104,6 +120,10 @@ public class AdoptionRequestService {
     }
 
     public void deleteAdoptionRequest(Long adoptionRequestId) {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can delete adoption requests.");
+        }
+
         if (!adoptionRequestRepository.existsById(adoptionRequestId)) {
             throw new InformationNotFoundException("Adoption Request with id " + adoptionRequestId + " not found");
         }

@@ -1,10 +1,12 @@
 package com.ga.petadoption.service;
 
+import com.ga.petadoption.exception.AccessDeniedException;
 import com.ga.petadoption.exception.InformationExistException;
 import com.ga.petadoption.exception.InformationNotFoundException;
 import com.ga.petadoption.model.Pet;
 import com.ga.petadoption.model.User;
 import com.ga.petadoption.model.enums.PetStatus;
+import com.ga.petadoption.model.enums.Role;
 import com.ga.petadoption.repository.AdoptionRequestRepository;
 import com.ga.petadoption.repository.PetRepository;
 import com.ga.petadoption.security.MyUserDetails;
@@ -33,6 +35,10 @@ public class PetService {
     }
 
     public Pet createPet(Pet petObject, MultipartFile photo) throws IOException {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can create pets.");
+        }
+
         if (petRepository.existsByName(petObject.getName())) {
             throw new InformationExistException("Pet with name '" + petObject.getName() + "' already exists");
         }
@@ -60,6 +66,10 @@ public class PetService {
     }
 
     public Pet updatePet(Long petId, Pet petObject, MultipartFile photo) throws IOException {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can update pets.");
+        }
+
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new InformationNotFoundException("Pet with id " + petId + " not found"));
 
@@ -77,6 +87,10 @@ public class PetService {
     }
 
     public void deletePet(Long petId) {
+        if (!getCurrentLoggedInUser().getRole().equals(Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can delete pets.");
+        }
+
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new InformationNotFoundException("Pet with id " + petId + " not found"));
 

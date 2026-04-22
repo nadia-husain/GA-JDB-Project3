@@ -50,4 +50,7 @@ public class VolunteerEvent {
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private User createdBy;
+
+    @Version
+    private Long version;
 }
