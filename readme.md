@@ -175,7 +175,8 @@ erDiagram
 
 ## 📅 Planning Documentation
 
->Planning was broken down into GitHub Issues organised by feature area. I started by creating issues for each core model — User, UserProfile, Pet, AdoptionRequest, VolunteerEvent, and Volunteer — covering their entity definitions, repositories, services, and controllers. Once the model-driven issues were in place, I added separate issues for cross-cutting concerns: role management and access control, database seeding, and writing the README.
+Planning was broken down into GitHub Issues organised by feature area. I started by creating issues for each core model — User, UserProfile, Pet, AdoptionRequest, VolunteerEvent, and Volunteer — covering their entity definitions, repositories, services, and controllers. Once the model-driven issues were in place, I added separate issues for cross-cutting concerns: role management and access control, database seeding, and writing the README.
+
 ---
 
 ## ⚙️ Installation & Setup
