@@ -64,7 +64,7 @@ public class Uploads {
 
     /**
      * Download a stored image file.
-     * @param uploadPath String Image's upload path [cpr-images, model-images, car-images]
+     * @param uploadPath String Image's upload path [profilePic]
      * @param fileName String image's stored filename in database
      * @return ResponseEntity Resource the image.
      */
@@ -83,7 +83,7 @@ public class Uploads {
 
     /**
      * Delete an existing image from storage.
-     * @param uploadPath String File's upload path ["uploads/cpr-images", "uploads/model-images", ...]
+     * @param uploadPath String File's upload path ["uploads/profilePic", "uploads/model-images", ...]
      * @param filename String name of the stored file
      */
     public void deleteImage(String uploadPath, String filename) {
