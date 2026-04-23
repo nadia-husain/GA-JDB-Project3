@@ -48,7 +48,7 @@ public class UserService {
     private PasswordResetTokenRepository passwordResetTokenRepository;
     private JavaMailSender mailSender;
     private EmailVerificationTokenRepository emailVerificationTokenRepository;
-    final String uploadImagePath = "uploads/cpr-images";
+    final String uploadImagePath = "uploads/profilePic";
     private final Uploads uploads;
 
     @Autowired
