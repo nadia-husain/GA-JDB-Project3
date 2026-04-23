@@ -41,7 +41,44 @@ The user onboarding flow includes **email verification** before login is permitt
 
 ## 📋 User Stories
 
-> 📝 [View User Stories →](https://github.com/nadia-husain/GA-JDB-Project3/issues)
+### 👤 Authentication & User Accounts
+
+* As a user, I want to verify my email before logging in so that my account is secure and valid.
+* As a user, I want to log in with my email and password so that I can access my dashboard.
+* As a user, I want to reset my password using an email link so that I can regain access if I forget it.
+* As a user, I want to deactivate my account so that I can stop using the platform while preserving my data.
+* As a user, I want to update my profile details and profile picture so that my account information stays current.
+
+### 🐾 Pet Browsing & Management
+
+* As a customer, I want to browse available pets so that I can see pets ready for adoption.
+* As a customer, I want to view pet details including image, age, and type so that I can make an informed adoption decision.
+* As an admin, I want to create new pet listings so that pets can be made visible for adoption.
+* As an admin, I want to update pet information so that listings remain accurate.
+* As an admin, I want to delete outdated pet listings so that unavailable pets are removed.
+
+### 🏠 Adoption Requests
+
+* As a customer, I want to submit an adoption request for a pet so that I can begin the adoption process.
+* As a customer, I want to see the status of my adoption request so that I know whether it is pending, approved, or rejected.
+* As an admin, I want to review incoming adoption requests so that I can decide who should adopt each pet.
+* As an admin, I want to approve an adoption request so that the pet becomes unavailable to others.
+* As an admin, I want to reject unsuitable adoption requests so that pets are matched responsibly.
+
+### 🙋 Volunteer Events
+
+* As a customer, I want to browse volunteer events so that I can help shelters and animals.
+* As a customer, I want to sign up for a volunteer event so that I can participate.
+* As an admin, I want to create volunteer events so that opportunities are available to users.
+* As an admin, I want to edit volunteer event details such as date, task, and capacity so that events stay accurate.
+* As an admin, I want to mark an event as full once capacity is reached so that no extra volunteers can join.
+* As an admin, I want to take the attendance of the volunteers in each volunteer event for record keeping.
+
+### 📊 Administration & Platform Operations
+
+* As an admin, I want to view all registered users so that I can manage the platform.
+* As an admin, I want to deactivate user accounts when necessary so that misuse can be controlled.
+* As an admin, I want to view adoption and volunteer activity so that I can monitor platform usage.
 
 ---
 
@@ -138,8 +175,7 @@ erDiagram
 
 ## 📅 Planning Documentation
 
-> 🗓️ [View GitHub Project Board →](https://github.com/nadia-husain/GA-JDB-Project3/projects)
-
+>Planning was broken down into GitHub Issues organised by feature area. I started by creating issues for each core model — User, UserProfile, Pet, AdoptionRequest, VolunteerEvent, and Volunteer — covering their entity definitions, repositories, services, and controllers. Once the model-driven issues were in place, I added separate issues for cross-cutting concerns: role management and access control, database seeding, and writing the README.
 ---
 
 ## ⚙️ Installation & Setup
