@@ -169,8 +169,76 @@ erDiagram
   USER ||--o{ PASSWORD_RESET_TOKEN : "requests"
   USER ||--o{ EMAIL_VERIFICATION_TOKEN : "verifies via"
 ```
+---
 
+## 🔗 REST API Endpoints
 
+### 🔐 Authentication & User Management
+
+| Request Type | URL | Functionality                           | Access |
+|---|---|-----------------------------------------|---|
+| POST | `/auth/users/register` | Register a new user account             | Public |
+| POST | `/auth/users/login` | User login — returns JWT token          | Public |
+| POST | `/auth/users/verify` | Verify email address via token          | Public |
+| POST | `/auth/users/forgot-password` | Send password reset link to email       | Public |
+| POST | `/auth/users/reset-password` | Reset password using token              | Public |
+| PUT | `/auth/users/change-password` | Change current user's password          | Private |
+| PUT | `/auth/users/update-profile` | Update user profile and profile picture | Private |
+| PATCH | `/auth/users/change-role` | Change a user's role                    | Private (Admin) |
+| PATCH | `/auth/users/soft-delete/{userId}` | Deactivate a user account (soft delete) | Private (Admin) |
+| PATCH | `/auth/users/reactivate/{userId}` | Reactivate an inactive user account     | Private (Admin) |
+| GET | `/auth/users/{userId}` | Get a user by ID                        | Private (Admin) |
+| GET | `/auth/users/image/{userId}` | Download a user's CPR image             | Private (Admin) |
+ 
+---
+
+### 🐾 Pets
+
+| Request Type | URL | Functionality | Access |
+|---|---|---|---|
+| POST | `/api/pet/new` | Create a new pet listing (with optional photo) | Private (Admin) |
+| GET | `/api/pet/all` | Get all pets | Public |
+| GET | `/api/pet/{petId}` | Get a specific pet by ID | Public |
+| GET | `/api/pet/{petId}/photo` | Get a pet's photo as an image | Public |
+| PATCH | `/api/pet/{petId}` | Update a pet's details and photo | Private (Admin) |
+| DELETE | `/api/pet/{petId}` | Delete a pet listing | Private (Admin) |
+ 
+---
+
+### 🏠 Adoption Requests
+
+| Request Type | URL | Functionality | Access |
+|---|---|---|---|
+| POST | `/api/adoption/{petId}/new` | Submit an adoption request for a pet | Private (Customer) |
+| GET | `/api/adoption/all` | Get all adoption requests | Private (Admin) |
+| GET | `/api/adoption/{adoptionRequestId}` | Get a specific adoption request by ID | Private (Admin) |
+| PATCH | `/api/adoption/{adoptionRequestId}/status` | Update the status of an adoption request | Private (Admin) |
+| DELETE | `/api/adoption/{adoptionRequestId}` | Delete an adoption request | Private (Admin) |
+
+---
+
+### 📅 Volunteer Events
+
+| Request Type | URL | Functionality | Access |
+|---|---|---|---|
+| POST | `/api/volunteerEvent/new` | Create a new volunteer event | Private (Admin) |
+| GET | `/api/volunteerEvent/all` | Get all volunteer events | Public |
+| GET | `/api/volunteerEvent/{volunteerEventId}` | Get a specific volunteer event by ID | Public |
+| PATCH | `/api/volunteerEvent/{volunteerEventId}` | Update a volunteer event | Private (Admin) |
+| DELETE | `/api/volunteerEvent/{volunteerEventId}` | Delete a volunteer event | Private (Admin) |
+ 
+---
+
+### 🙋 Volunteers
+
+| Request Type | URL | Functionality | Access |
+|---|---|---|---|
+| POST | `/api/volunteer/new` | Create a new volunteer record | Private |
+| GET | `/api/volunteer/all` | Get all volunteers | Private (Admin) |
+| GET | `/api/volunteer/{volunteerId}` | Get a specific volunteer by ID | Private (Admin) |
+| PATCH | `/api/volunteer/{volunteerId}` | Update a volunteer record | Private (Admin) |
+| DELETE | `/api/volunteer/{volunteerId}` | Delete a volunteer record | Private (Admin) |
+ 
 ---
 
 ## 📅 Planning Documentation
